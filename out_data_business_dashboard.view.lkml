@@ -9,11 +9,72 @@ view: out_data_business_dashboard {
     drill_fields: [detail*]
   }
 
+  measure: Avg_order_value {
+    type: number
+    sql: SUM(${TABLE}.gmv) * 10000000 / COUNT_DISTINCT(num_of_order_PT_CN_DN) ;;
+  }
+
+  measure: nmv_in_cr {
+    type: sum
+    sql: SUM(
+        CASE
+          WHEN ${TABLE}.data = 'sap_plant' AND NOT(REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ${TABLE}.NMV
+          WHEN (REGEXP_CONTAINS(LOWER(${TABLE}.sku_description), 'positive') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN 0
+          ELSE ${TABLE}.NMV
+        END
+      ) ;;
+  }
+
+
+
   measure: GMV {
     type: sum
     drill_fields: [total_invoiced_value_gmv]
     sql: ROUND(${TABLE}.total_invoiced_value_gmv / 10000000, 2) ;;
   }
+
+  measure: NMV {
+    type: sum
+    drill_fields: [base_invoiced_value]
+    sql: ROUND(${TABLE}.base_invoiced_value / 10000000, 2) ;;
+  }
+
+
+  dimension: Invoice_qty {
+    type: number
+    sql: CASE
+         WHEN ${TABLE}.Supplier = 'Plant supply' THEN ${TABLE}.total_invoiced_qty
+         WHEN LOWER(${TABLE}.uom_2) = 'mt' THEN ${TABLE}.total_invoiced_qty
+         WHEN REGEXP_CONTAINS(LOWER(${TABLE}.uom_2), 'bag') THEN ${TABLE}.total_invoiced_qty / 20
+         WHEN LOWER(${TABLE}.uom_2) = 'number_of_bags' THEN ${TABLE}.total_invoiced_qty / 20
+         WHEN LOWER(${TABLE}.uom_2) = 'kg' THEN ${TABLE}.total_invoiced_qty / 1000
+         ELSE 0
+       END ;;
+  }
+
+  dimension: Invoice_qty_in_CuM {
+    type: number
+    sql: CASE WHEN REGEXP_CONTAINS(LOWER(${TABLE}.uom_2), 'cu') THEN ${TABLE}.total_invoiced_qty ELSE 0 END ;;
+  }
+
+  dimension: num_of_order_PT_CN_DN {
+    type: string
+    sql: CASE
+         WHEN ${TABLE}.data = 'sap_plant' AND NOT(REGEXP_CONTAINS(IFNULL(${TABLE}.parent_order_id,'No data'),'-CN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.parent_order_id,'No data'),'-DN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.sku_id,'No data'),'-DN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.sku_id,'No data'),'-CN') ) THEN ${TABLE}.parent_order_id
+         WHEN NOT (REGEXP_CONTAINS(${TABLE}.material_code, '^9') OR REGEXP_CONTAINS(IFNULL(${TABLE}.parent_order_id,'No data'),'-CN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.parent_order_id,'No data'),'-DN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.sku_id,'No data'),'-DN') OR REGEXP_CONTAINS(IFNULL(${TABLE}.sku_id,'No data'),'-CN') ) THEN ${TABLE}.parent_order_id
+         ELSE NULL
+       END ;;
+  }
+
+  dimension: num_of_customer_billed {
+    type: string
+    sql: CASE
+          WHEN NOT(REGEXP_CONTAINS(IFNULL(${TABLE}.material_code, '0'), '^9') OR REGEXP_CONTAINS(${TABLE}.sku_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.sku_id, '-DN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ${TABLE}.buyer_id
+       END ;;
+  }
+
+
+
 
   dimension: o1_o2_segmentation {
     type: string

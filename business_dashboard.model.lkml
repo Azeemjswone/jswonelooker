@@ -11,6 +11,8 @@ explore: out_data_business_dashboard {
   label: "Output business dashboard"
 
   }
+
+
 #
 #   join: users {
 #     relationship: many_to_one
