@@ -18,9 +18,9 @@ view: out_data_business_dashboard {
     type: sum
     sql: SUM(
         CASE
-          WHEN ${TABLE}.data = 'sap_plant' AND NOT(REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ${TABLE}.NMV
+          WHEN ${TABLE}.data = 'sap_plant' AND NOT(REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ROUND(${TABLE}.base_invoiced_value / 10000000, 2)
           WHEN (REGEXP_CONTAINS(LOWER(${TABLE}.sku_description), 'positive') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN 0
-          ELSE ${TABLE}.NMV
+          ELSE ROUND(${TABLE}.base_invoiced_value / 10000000, 2)
         END
       ) ;;
   }
