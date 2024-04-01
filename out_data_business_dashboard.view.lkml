@@ -9,10 +9,17 @@ view: out_data_business_dashboard {
     drill_fields: [detail*]
   }
 
-  measure: Avg_order_value {
+  # measure: Avg_order_value {
+  #   type: number
+  #   sql: ${GMV} * 10000000 /  count_distinct(${num_of_order_PT_CN_DN}) ;;
+  # }
+
+
+  measure: Avg_order_value2 {
     type: number
-    sql: SUM(${TABLE}.gmv) * 10000000 / COUNT_DISTINCT(num_of_order_PT_CN_DN) ;;
+    sql: ${GMV} * 10000000 / (SELECT COUNT(DISTINCT ${num_of_order_PT_CN_DN}) FROM ${TABLE}) ;;
   }
+
 
   measure: nmv_in_cr {
     type: sum
@@ -40,17 +47,23 @@ view: out_data_business_dashboard {
   }
 
 
-  dimension: Invoice_qty {
-    type: number
+  measure: Invoice_qty {
+    type: sum
     sql: CASE
          WHEN ${Supplier}  = 'Plant supply' THEN ${TABLE}.total_invoiced_qty
-         WHEN LOWER(${TABLE}.uom_2) = 'mt' THEN ${TABLE}.total_invoiced_qty
-         WHEN REGEXP_CONTAINS(LOWER(${TABLE}.uom_2), 'bag') THEN ${TABLE}.total_invoiced_qty / 20
-         WHEN LOWER(${TABLE}.uom_2) = 'number_of_bags' THEN ${TABLE}.total_invoiced_qty / 20
-         WHEN LOWER(${TABLE}.uom_2) = 'kg' THEN ${TABLE}.total_invoiced_qty / 1000
+         WHEN LOWER(${uom_2}) = 'mt' THEN ${TABLE}.total_invoiced_qty
+         WHEN REGEXP_CONTAINS(LOWER(${uom_2}), 'bag') THEN ${TABLE}.total_invoiced_qty / 20
+         WHEN LOWER(${uom_2}) = 'number_of_bags' THEN ${TABLE}.total_invoiced_qty / 20
+         WHEN LOWER(${uom_2}) = 'kg' THEN ${TABLE}.total_invoiced_qty / 1000
          ELSE 0
        END ;;
   }
+
+  measure: Invoice_qty_in_CuM {
+    type: sum
+    sql: CASE WHEN REGEXP_CONTAINS(LOWER(${uom_2}), 'cu') THEN ${TABLE}.total_invoiced_qty ELSE 0 END ;;
+  }
+
 
   dimension: Supplier {
     type: string
@@ -69,10 +82,6 @@ view: out_data_business_dashboard {
   }
 
 
-  dimension: Invoice_qty_in_CuM {
-    type: number
-    sql: CASE WHEN REGEXP_CONTAINS(LOWER(${TABLE}.uom_2), 'cu') THEN ${TABLE}.total_invoiced_qty ELSE 0 END ;;
-  }
 
   dimension: num_of_order_PT_CN_DN {
     type: string
@@ -89,6 +98,16 @@ view: out_data_business_dashboard {
           WHEN NOT(REGEXP_CONTAINS(IFNULL(${TABLE}.material_code, '0'), '^9') OR REGEXP_CONTAINS(${TABLE}.sku_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.sku_id, '-DN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ${TABLE}.buyer_id
        END ;;
   }
+
+  dimension: uom_2 {
+    type: string
+    sql: CASE
+         WHEN REGEXP_CONTAINS(${TABLE}.data, 'ERP') THEN ${TABLE}.erp_uom
+         WHEN ${TABLE}.erp_uom IS NOT NULL THEN ${TABLE}.erp_uom
+         ELSE ${TABLE}.uom
+       END ;;
+  }
+
 
 
 
