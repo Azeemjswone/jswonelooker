@@ -16,7 +16,7 @@ view: out_data_business_dashboard {
 
 
   measure: Avg_order_value2 {
-    type: number
+    type: sum
     sql: sum(${TABLE}.total_invoiced_value_gmv) / (SELECT COUNT(DISTINCT ${num_of_order_PT_CN_DN}) FROM ${TABLE}) ;;
   }
 
