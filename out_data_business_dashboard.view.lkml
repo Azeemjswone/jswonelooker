@@ -16,7 +16,7 @@ view: out_data_business_dashboard {
 
   measure: nmv_in_cr {
     type: sum
-    sql: SUM(
+    sql: (
         CASE
           WHEN ${TABLE}.data = 'sap_plant' AND NOT(REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN ROUND(${TABLE}.base_invoiced_value / 10000000, 2)
           WHEN (REGEXP_CONTAINS(LOWER(${TABLE}.sku_description), 'positive') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-CN') OR REGEXP_CONTAINS(${TABLE}.parent_order_id, '-DN')) THEN 0
@@ -43,7 +43,7 @@ view: out_data_business_dashboard {
   dimension: Invoice_qty {
     type: number
     sql: CASE
-         WHEN ${TABLE}.Supplier = 'Plant supply' THEN ${TABLE}.total_invoiced_qty
+         WHEN ${Supplier}  = 'Plant supply' THEN ${TABLE}.total_invoiced_qty
          WHEN LOWER(${TABLE}.uom_2) = 'mt' THEN ${TABLE}.total_invoiced_qty
          WHEN REGEXP_CONTAINS(LOWER(${TABLE}.uom_2), 'bag') THEN ${TABLE}.total_invoiced_qty / 20
          WHEN LOWER(${TABLE}.uom_2) = 'number_of_bags' THEN ${TABLE}.total_invoiced_qty / 20
@@ -51,6 +51,23 @@ view: out_data_business_dashboard {
          ELSE 0
        END ;;
   }
+
+  dimension: Supplier {
+    type: string
+    sql: CASE
+         WHEN ${TABLE}.data IN ('amt_utilization', 'plant_order_book_jodl', 'plant_order_book', 'sap_plant')
+              OR (${TABLE}.data IN ('order_book', 'distributed') AND ${TABLE}.transaction_type_pid = 'Direct') THEN 'Plant supply'
+         WHEN ${TABLE}.data IN ('order_book', 'distributed')
+              AND ${TABLE}.transaction_type_pid != 'Direct' AND ${TABLE}.transaction_nature != 'Inventory' THEN 'Distributor'
+         WHEN ${TABLE}.data IN ('order_book', 'distributed')
+              AND ${TABLE}.transaction_type_pid != 'Direct' AND ${TABLE}.transaction_nature = 'Inventory' THEN 'T1S'
+         WHEN ${TABLE}.data = 'ERP' THEN 'ERP'
+         WHEN ${TABLE}.data = 'ERP-PS' THEN 'ERP-PS'
+         WHEN ${TABLE}.data = 'LU' THEN 'LU'
+         ELSE 'Other'
+       END ;;
+  }
+
 
   dimension: Invoice_qty_in_CuM {
     type: number
