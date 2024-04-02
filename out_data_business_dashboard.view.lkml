@@ -109,6 +109,14 @@ view: out_data_business_dashboard {
   }
 
 
+  dimension: invoice_month_year {
+    type: string
+    sql: CONCAT(MONTHNAME(${TABLE}.invoice_date), ' - ', YEAR(${TABLE}.invoice_date)) ;;
+    label: "Invoice Month - Year"
+  }
+
+
+
 
 
 
