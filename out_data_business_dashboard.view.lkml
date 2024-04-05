@@ -120,6 +120,25 @@ view: out_data_business_dashboard {
     label: "Invoice Month - Year"
   }
 
+  dimension_group: format_invoice_date {
+    hidden: yes
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      hour,
+      hour_of_day,
+      time_of_day,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: ${TABLE}.invoice_date ;;
+  }
+
+
 
 
 
