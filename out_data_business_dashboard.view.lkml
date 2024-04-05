@@ -139,6 +139,25 @@ view: out_data_business_dashboard {
 
 
 
+  dimension_group: format_first_invocie_date {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      hour,
+      hour_of_day,
+      time_of_day,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: ${TABLE}.first_invoice_date ;;
+  }
+
+
+
 
 
 
