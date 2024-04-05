@@ -34,6 +34,7 @@ view: out_data_business_dashboard {
 
 
 
+
   measure: GMV {
     type: sum
     drill_fields: [total_invoiced_value_gmv]
@@ -81,6 +82,10 @@ view: out_data_business_dashboard {
        END ;;
   }
 
+  dimension: first_time_billed_customer {
+    type: string
+    sql: CASE WHEN ${TABLE}.invoice_date = ${TABLE}.first_invoice_date THEN ${buyer_id} END ;;
+  }
 
 
   dimension: num_of_order_PT_CN_DN {
