@@ -12,6 +12,10 @@ explore: out_data_business_dashboard {
 
   }
 
+explore:  business_dashboard_pervious{
+
+  label: "kpi camparsion view"
+}
 
 #
 #   join: users {
