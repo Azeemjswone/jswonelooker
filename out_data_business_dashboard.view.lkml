@@ -121,7 +121,6 @@ view: out_data_business_dashboard {
   }
 
   dimension_group: format_invoice_date {
-    hidden: yes
     type: time
     timeframes: [
       raw,
