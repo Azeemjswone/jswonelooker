@@ -18,6 +18,10 @@ view: business_dashboard_pervious {
     type: date
   }
 
+  parameter: date_selector {
+    type: date
+    description: "Use this field to select a date to filter results by."
+  }
 
 
   derived_table: {
@@ -27,7 +31,7 @@ view: business_dashboard_pervious {
 
        from   `jswone-data-prod.ds_report_blocks.business_overview_direct_and_mfg_table_v2`
 
-       where invoice_date between date({% parameter c_start_date %}) and date({% parameter c_end_date %})) as a
+       where {% condition date_selector %} invoice_date {% endcondition %}    ) as a
 
       left join
        (Select
