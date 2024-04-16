@@ -17,6 +17,11 @@ explore:  business_dashboard_pervious{
   label: "kpi camparsion view"
 }
 
+explore:  visit_map {
+
+  label: "kpi map view"
+}
+
 #
 #   join: users {
 #     relationship: many_to_one
